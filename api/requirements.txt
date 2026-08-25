@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+agno
+groq
+pygithub
+pydantic
+python-dotenv
+mangum

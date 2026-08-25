@@ -1,0 +1,210 @@
+{
+  "main": {
+    "id": "678ab62da1c2a226",
+    "type": "split",
+    "children": [
+      {
+        "id": "080f482fc70a28b0",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "2ab5454b19c6fae6",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "vault/02-Architecture/02-System-Architecture.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "02-System-Architecture"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "d7636601a50e37c1",
+    "type": "split",
+    "children": [
+      {
+        "id": "adc6c5dd06a6f3e7",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "c45a9bb00a9d9dc4",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "3a88c21f8e26421e",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "c119608b19d9806a",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "b758fb9356cba48d",
+    "type": "split",
+    "children": [
+      {
+        "id": "0d838aa745ed9085",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "2933be338b4bd9ad",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks"
+            }
+          },
+          {
+            "id": "f1849809884574b3",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links"
+            }
+          },
+          {
+            "id": "16fa7ab2fa6172d7",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "54fcf51690f95451",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "82dcc2a22ae85f61",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "2ab5454b19c6fae6",
+  "lastOpenFiles": [
+    "vault/00-Home/README-Generator-Vault.md",
+    "vault/00-Home",
+    "vault/08-UI-Design/08-UI-Design-Spec.md",
+    "vault/08-UI-Design",
+    "vault/07-Endpoints/07-Endpoint-Matrix.md",
+    "vault/07-Endpoints",
+    "vault/06-Deployment/06-Deployment-and-Configuration.md",
+    "vault/06-Deployment",
+    "vault/05-Frontend/05-Frontend-Specifications.md",
+    "vault/05-Frontend",
+    "vault/04-Backend/04-Backend-Specifications.md",
+    "vault/04-Backend",
+    "vault/03-Tech-Stack/03-Technology-Stack.md",
+    "vault/03-Tech-Stack",
+    "vault/02-Architecture/02-System-Architecture.md",
+    "vault/02-Architecture",
+    "vault/01-Overview/01-Overview-and-Purpose.md",
+    "vault/01-Overview",
+    "vault"
+  ]
+}
