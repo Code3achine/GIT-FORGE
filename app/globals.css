@@ -10,7 +10,7 @@
   --text-main: #4e342e;
   --text-secondary: #a1887f;
   --action-primary: #26a69a;
-  --accent-heading: #e91e63;
+  --accent-heading: #f06292;
 }
 /* Solarized Dark Theme Variables */
 [data-theme="dark"] {
@@ -18,7 +18,7 @@
   --bg-panel: #24221e;
   --text-main: #efebe9;
   --text-secondary: #b0a8a0;
-  --action-primary: #4db6ac;
+  --action-primary: #26a69a;
   --accent-heading: #f06292;
 }
 

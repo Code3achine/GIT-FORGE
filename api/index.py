@@ -100,38 +100,38 @@ def parse_owner_repo(raw: str) -> tuple[str, str]:
 # ---------------------------------------------------------------------------
 
 SECTION_GUIDANCE = {
-    "features": "a Features section",
-    "installation": "a detailed Installation section (see Step 4 below)",
-    "techstack": "a Tech Stack section summarizing the primary languages and frameworks",
-    "license": "a License section if license info is available",
+    "features": "a Features section (## 🚀 Features)",
+    "installation": "a detailed Installation section (## 📦 Installation) (see Step 4 below)",
+    "techstack": "a Tech Stack section (## 🛠️ Tech Stack) summarizing the primary languages and frameworks",
+    "license": "a License section (## 📄 License) if license info is available",
 }
 
 SECTION_ORDER = ["features", "installation", "techstack", "license"]
 
 INSTALLATION_DETAIL = (
     "Step 4: For the Installation section specifically, write out the full setup process as "
-    "numbered, copy-pasteable steps under their own subheadings (###), in this order: "
-    "(0) Prerequisites — a bulleted list of required tools/runtimes and their minimum versions, "
+    "numbered, copy-pasteable steps under their own subheadings (###) with emojis, in this order: "
+    "(0) ### ⚙️ Prerequisites — a bulleted list of required tools/runtimes and their minimum versions, "
     "inferred from the repository's primary language (e.g. Node.js 18+ for JS/TS projects, "
     "Python 3.10+ for Python projects, Go 1.21+ for Go, etc.), plus Git; "
-    "(1) Clone the repository — a fenced shell code block with `git clone <repo-url>` followed by "
+    "(1) ### 1. 📥 Clone the repository — a fenced shell code block with `git clone <repo-url>` followed by "
     "`cd <repo-name>`; "
-    "(2) Install dependencies — a fenced shell code block with the correct install command for the "
+    "(2) ### 2. 💻 Install dependencies — a fenced shell code block with the correct install command for the "
     "detected language/tech stack from Step 3 (e.g. `npm install` or `yarn install` for "
     "Node/JavaScript/TypeScript projects, `pip install -r requirements.txt` for Python projects, "
     "`bundle install` for Ruby, `go mod download` for Go, etc.) — pick the command that matches what "
     "`get_repository_languages` returned; "
-    "(3) Configure environment variables — if a `.env.example`, `.env.sample`, config file, or "
+    "(3) ### 3. 🔑 Configure environment variables — if a `.env.example`, `.env.sample`, config file, or "
     "documented required variable is discoverable from the repository metadata or README contents, "
     "show a fenced shell block copying it (e.g. `cp .env.example .env`) followed by a fenced `env` "
     "block listing the variable names that need to be filled in; skip this numbered step entirely if "
     "no environment configuration is discoverable — do not invent variable names; "
-    "(4) Run the project — a fenced shell code block with the appropriate start/run command for that "
+    "(4) ### 4. 🚀 Run the project — a fenced shell code block with the appropriate start/run command for that "
     "stack (e.g. `npm run dev` or `npm start`, `python app.py`, `python manage.py runserver`, "
     "`docker compose up`, etc.), inferred from the repository's language and structure, followed by a "
     "one-line note on what URL or output to expect (e.g. `http://localhost:3000`) if that can be "
     "reasonably inferred; "
-    "(5) Verify it's working — a short fenced shell code block showing a simple sanity check "
+    "(5) ### 5. ✅ Verify it's working — a short fenced shell code block showing a simple sanity check "
     "appropriate to the project type (e.g. a `curl` against a health/status endpoint if one exists, "
     "running the test suite, or opening the app in a browser) — omit this step if no reasonable check "
     "can be inferred rather than inventing one. "
@@ -167,8 +167,12 @@ def build_instructions(req: GenerateRequest) -> List[str]:
 
     instructions.append(
         f"Step 5: Write in a {req.tone or 'Professional'} tone throughout. Draft a complete, "
-        f"well-structured README.md in Markdown with these sections: a title, a concise "
+        f"well-structured README.md in Markdown with these sections: a title with a relevant emoji (e.g. # 🚀 <repo-name>), a concise "
         f"description/tagline, {badges_clause}{sections_clause}."
+    )
+    instructions.append(
+        "Use expressive and relevant emojis in all section headings (e.g. 🚀, 📦, 🛠️, 📄, ⚙️, 🔑, ✅, ✨) "
+        "and bullet points to make the README modern, appealing, and visually engaging."
     )
     instructions.append(
         "Use proper Markdown syntax: headings, fenced code blocks with language hints, and lists."

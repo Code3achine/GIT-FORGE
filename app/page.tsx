@@ -284,7 +284,7 @@ function buildMarkdown({
     Friendly: `Hey! 👋 ${pkgName} is a fun little project from ${owner} — here's everything you need to get going.`,
   };
 
-  const parts: string[] = [`# ${pkgName}`, ""];
+  const parts: string[] = [`# 🚀 ${pkgName}`, ""];
 
   if (includeBadges) {
     parts.push(
@@ -305,20 +305,20 @@ function buildMarkdown({
     };
 
     parts.push(
-      "## Installation",
+      "## 📦 Installation",
       "",
-      "### Prerequisites",
+      "### ⚙️ Prerequisites",
       "",
-      ...s.prereqs.map((p) => `- ${p}`),
+      ...s.prereqs.map((p) => `- 🔹 ${p}`),
       "",
-      "### 1. Clone the repository",
+      "### 1. 📥 Clone the repository",
       "",
       "```bash",
       `git clone https://github.com/${owner}/${pkgName}.git`,
       `cd ${pkgName}`,
       "```",
       "",
-      "### 2. Install dependencies",
+      "### 2. 💻 Install dependencies",
       "",
       `\`\`\`${s.installLang}`,
       ...s.install,
@@ -328,7 +328,7 @@ function buildMarkdown({
 
     if (s.envHint) {
       parts.push(
-        "### 3. Configure environment variables",
+        "### 3. 🔑 Configure environment variables",
         "",
         "Copy the example env file and fill in your own values:",
         "",
@@ -341,7 +341,7 @@ function buildMarkdown({
 
     const runStepNum = s.envHint ? 4 : 3;
     parts.push(
-      `### ${runStepNum}. Run the project`,
+      `### ${runStepNum}. 🚀 Run the project`,
       "",
       `\`\`\`${s.runLang}`,
       ...s.run,
@@ -352,7 +352,7 @@ function buildMarkdown({
 
     if (s.verify) {
       parts.push(
-        `### ${runStepNum + 1}. Verify it's working`,
+        `### ${runStepNum + 1}. ✅ Verify it's working`,
         "",
         `\`\`\`${s.verifyLang ?? "bash"}`,
         ...s.verify,
@@ -364,22 +364,29 @@ function buildMarkdown({
 
   if (sectionKeys.includes("features")) {
     parts.push(
-      "## Features",
+      "## ✨ Features",
       "",
-      `- Fast, minimal setup for ${pkgName}`,
-      "- Well-documented API surface",
-      "- Actively maintained by " + owner,
+      `- ⚡ Fast, minimal setup for ${pkgName}`,
+      "- 📖 Well-documented API surface",
+      "- 🛠️ Actively maintained by " + owner,
       ""
     );
   }
 
   if (sectionKeys.includes("techStack")) {
-    parts.push("## Tech Stack", "", "- TypeScript / JavaScript", "- Node.js", "- React", "");
+    parts.push(
+      "## 🛠️ Tech Stack",
+      "",
+      "- ⚡ TypeScript / JavaScript",
+      "- 🟢 Node.js",
+      "- ⚛️ React",
+      ""
+    );
   }
 
   if (sectionKeys.includes("license")) {
     parts.push(
-      "## License",
+      "## 📄 License",
       "",
       "This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).",
       ""
@@ -509,10 +516,22 @@ export default function Page() {
               >
                 
               </label>
-              <div className="flex gap-2">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleGenerate();
+                }}
+                className="flex gap-2"
+              >
                 <input
                   value={repoUrl}
                   onChange={(e) => setRepoUrl(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleGenerate();
+                    }
+                  }}
                   placeholder="https://github.com/username/repo"
                   className="flex-1 rounded-md border px-3 py-2.5 text-sm outline-none"
                   style={{
@@ -522,7 +541,7 @@ export default function Page() {
                   }}
                 />
                 <button
-                  onClick={handleGenerate}
+                  type="submit"
                   disabled={loading}
                   className="flex items-center gap-1.5 rounded-md px-4 py-2.5 text-sm font-medium text-white whitespace-nowrap disabled:opacity-60"
                   style={{ background: "var(--action-primary)" }}
@@ -530,7 +549,7 @@ export default function Page() {
                   <Sparkles size={14} />
                   {loading ? "Generating…" : "Generate"}
                 </button>
-              </div>
+              </form>
             </section>
 
             {/* Configuration */}
@@ -542,7 +561,7 @@ export default function Page() {
               }}
             >
               <h2 className="text-sm font-semibold mb-4">Configuration</h2>
-              <div className="grid grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 items-start">
                 <div>
                   <div
                     className="text-xs font-medium mb-2"
@@ -553,7 +572,7 @@ export default function Page() {
                   <select
                     value={tone}
                     onChange={(e) => setTone(e.target.value as Tone)}
-                    className="w-full rounded-md border px-2 py-2 text-xs outline-none"
+                    className="w-full rounded-md border px-2.5 py-2 text-xs outline-none"
                     style={{
                       background: "var(--bg-primary)",
                       borderColor: "var(--text-secondary)4d",
@@ -573,11 +592,11 @@ export default function Page() {
                     className="text-xs font-medium mb-2"
                     style={{ color: "var(--text-secondary)" }}
                   >
-                    Badges Toggle
+                    Badges
                   </div>
-                  <div className="space-y-3">
-                    <ToggleRow label="Include Badges?" checked={includeBadges} onChange={setIncludeBadges} />
-                    <ToggleRow label="Badges" checked={badgesToggle} onChange={setBadgesToggle} />
+                  <div className="space-y-2">
+                    <ToggleRow label="Include Badges" checked={includeBadges} onChange={setIncludeBadges} />
+                    <ToggleRow label="Show Shields" checked={badgesToggle} onChange={setBadgesToggle} />
                   </div>
                 </div>
 
@@ -588,9 +607,9 @@ export default function Page() {
                   >
                     Sections
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     {sections.map((s) => (
-                      <label key={s.key} className="flex items-center gap-2 text-xs cursor-pointer">
+                      <label key={s.key} className="flex items-center gap-2 text-xs cursor-pointer select-none h-6">
                         <input
                           type="checkbox"
                           checked={s.checked}
@@ -669,7 +688,7 @@ export default function Page() {
                 >
                   <div className="flex max-h-72 overflow-y-auto">
                     <div
-                      className="select-none px-3 py-2 text-right text-xs font-mono"
+                      className="select-none px-3 py-2 text-right text-xs font-mono leading-6"
                       style={{ color: "var(--text-secondary)99" }}
                     >
                       {lines.map((_, i) => (
@@ -681,8 +700,11 @@ export default function Page() {
                       onChange={(e) => setMarkdown(e.target.value)}
                       placeholder="Click Generate to create your README…"
                       spellCheck={false}
-                      className="flex-1 min-h-[18rem] resize-none bg-transparent px-3 py-2 font-mono text-xs leading-6 outline-none"
-                      style={{ color: "var(--text-main)" }}
+                      className="flex-1 min-h-[18rem] resize-none overflow-hidden bg-transparent px-3 py-2 font-mono text-xs leading-6 outline-none"
+                      style={{
+                        color: "var(--text-main)",
+                        height: `${Math.max(288, lines.length * 24 + 16)}px`,
+                      }}
                     />
                   </div>
                 </div>
@@ -694,9 +716,7 @@ export default function Page() {
                     background: "var(--bg-primary)",
                   }}
                 >
-                  <article className="prose prose-sm max-w-none">
-                    <ReactMarkdown>{markdown}</ReactMarkdown>
-                  </article>
+                  <PreviewRender markdown={markdown} />
                 </div>
               )}
             </section>
@@ -711,7 +731,7 @@ export default function Page() {
             }}
           >
             <div
-              className="px-5 py-4 border-b"
+              className="px-5 py-4 border-b shrink-0"
               style={{ borderColor: "var(--text-secondary)33" }}
             >
               <h2 className="text-sm font-semibold mb-3">README.md Preview</h2>
@@ -747,12 +767,12 @@ export default function Page() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-6 py-5">
+            <div className="overflow-y-auto max-h-72 min-h-[18rem] px-6 py-5">
               {markdown ? (
                 <PreviewRender markdown={markdown} />
               ) : (
                 <div
-                  className="flex h-full items-center justify-center text-sm"
+                  className="flex h-full items-center justify-center text-sm py-12"
                   style={{ color: "var(--text-secondary)" }}
                 >
                   Generate a README to see the preview.
@@ -842,16 +862,17 @@ function ToggleRow({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-2">
-      <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
+    <div className="flex items-center justify-between gap-3 h-6 w-full">
+      <span className="text-xs font-normal truncate select-none" style={{ color: "var(--text-secondary)" }}>
         {label}
       </span>
       <button
+        type="button"
         role="switch"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
-        className="relative h-5 w-9 shrink-0 rounded-full transition-colors"
-        style={{ background: checked ? "var(--action-primary)" : "var(--text-secondary)4d" }}
+        className="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none"
+        style={{ background: checked ? "var(--action-primary)" : "#f06292" }}
       >
         <span
           className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${
