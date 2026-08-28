@@ -1,20 +1,13 @@
 import os
-from pathlib import Path
 from typing import List, Optional
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from mangum import Mangum
-from dotenv import load_dotenv
 
 from agno.agent import Agent
 from agno.models.groq import Groq
 from agno.tools.github import GithubTools
-
-# Safely load .env.local from project root
-ROOT_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(ROOT_DIR / ".env.local")
-load_dotenv(ROOT_DIR / ".env")
 
 app = FastAPI()
 
@@ -42,21 +35,11 @@ def generate_readme(req: GenerateRequest):
     if not req.repo_url.strip():
         raise HTTPException(status_code=400, detail="repo_url is required")
 
-    groq_api_key = os.getenv("GROQ_API_KEY")
-    if not groq_api_key:
-        raise HTTPException(
-            status_code=500, 
-            detail="GROQ_API_KEY environment variable is missing. Check your .env.local file."
-        )
-
-    github_token = os.getenv("GITHUB_TOKEN")
     sections = req.sections or ["installation", "features", "techStack", "license"]
 
-    tools = [GithubTools(access_token=github_token)] if github_token else [GithubTools()]
-
     agent = Agent(
-        model=Groq(id="openai/gpt-oss-120b", api_key=groq_api_key),
-        tools=tools,
+        model=Groq(id="llama-3.3-70b-versatile", api_key=os.environ["GROQ_API_KEY"]),
+        tools=[GithubTools(access_token=os.environ.get("GITHUB_TOKEN"))],
         instructions=[
             f"Generate a {req.tone} README.md for the repository {req.repo_url}.",
             f"Include only these sections, in order: {', '.join(sections)}.",

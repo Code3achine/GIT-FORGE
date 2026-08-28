@@ -2,6 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Solarized Light Theme Variables */
+:root,
+[data-theme="light"] {
+  --bg-primary: #fffde7;
+  --bg-panel: #fff8e1;
+  --text-main: #4e342e;
+  --text-secondary: #a1887f;
+  --action-primary: #26a69a;
+  --accent-heading: #e91e63;
+}
+/* Solarized Dark Theme Variables */
+[data-theme="dark"] {
+  --bg-primary: #161512;
+  --bg-panel: #24221e;
+  --text-main: #efebe9;
+  --text-secondary: #b0a8a0;
+  --action-primary: #4db6ac;
+  --accent-heading: #f06292;
+}
+
 html,
 body {
   padding: 0;
