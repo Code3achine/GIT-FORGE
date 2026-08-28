@@ -25,20 +25,258 @@ const DEFAULT_SECTIONS = [
   { key: "license", label: "License", checked: true },
 ];
 
+function parseOwnerRepo(repoUrl: string): { owner: string; repo: string } {
+  const cleaned = repoUrl
+    .trim()
+    .replace(/^https?:\/\//, "")
+    .replace(/^github\.com\//, "")
+    .replace(/\.git$/, "")
+    .replace(/\/+$/, "");
+  const parts = cleaned.split("/").filter(Boolean);
+  const repo = parts.pop() || "project";
+  const owner = parts.pop() || "owner";
+  return { owner, repo };
+}
+
+type StackInfo = {
+  prereqs: string[];
+  install: string[];
+  installLang: string;
+  run: string[];
+  runLang: string;
+  runNote?: string;
+  verify?: string[];
+  verifyLang?: string;
+  envHint?: boolean;
+};
+
+// Detects the tech stack for a repo by checking root-level manifest files via
+// the GitHub REST API (unauthenticated, public repos only — no token needed
+// for this lightweight lookup). Falls back to `null` on any failure so callers
+// can degrade gracefully instead of guessing wrong.
+async function detectStack(owner: string, repo: string): Promise<StackInfo | null> {
+  try {
+    const [repoRes, contentsRes] = await Promise.all([
+      fetch(`https://api.github.com/repos/${owner}/${repo}`),
+      fetch(`https://api.github.com/repos/${owner}/${repo}/contents`),
+    ]);
+    if (!contentsRes.ok) return null;
+
+    const contents: Array<{ name: string }> = await contentsRes.json();
+    const files = new Set(contents.map((f) => f.name.toLowerCase()));
+    const language: string | null = repoRes.ok ? (await repoRes.json()).language : null;
+
+    const has = (name: string) => files.has(name.toLowerCase());
+
+    // --- Node / JavaScript / TypeScript ---
+    if (has("package.json")) {
+      let pkgManager = "npm";
+      let installCmd = "npm install";
+      let runCmd = "npm run dev";
+      if (has("pnpm-lock.yaml")) {
+        pkgManager = "pnpm";
+        installCmd = "pnpm install";
+        runCmd = "pnpm dev";
+      } else if (has("yarn.lock")) {
+        pkgManager = "yarn";
+        installCmd = "yarn install";
+        runCmd = "yarn dev";
+      }
+
+      // Try to read actual scripts to pick the right run command.
+      try {
+        const pkgRes = await fetch(
+          `https://raw.githubusercontent.com/${owner}/${repo}/HEAD/package.json`
+        );
+        if (pkgRes.ok) {
+          const pkgJson = await pkgRes.json();
+          const scripts = pkgJson.scripts || {};
+          const script = scripts.dev
+            ? "dev"
+            : scripts.start
+            ? "start"
+            : scripts.serve
+            ? "serve"
+            : null;
+          if (script) {
+            runCmd = pkgManager === "npm" ? `npm run ${script}` : `${pkgManager} ${script}`;
+          }
+        }
+      } catch {
+        // keep the lockfile-based guess
+      }
+
+      return {
+        prereqs: ["[Node.js](https://nodejs.org) 18 or higher", "[Git](https://git-scm.com)"],
+        install: [installCmd],
+        installLang: "bash",
+        run: [runCmd],
+        runLang: "bash",
+        runNote: "Open [http://localhost:3000](http://localhost:3000) once it's running.",
+        verify: ["curl http://localhost:3000/api/health", '# {"status": "healthy"}'],
+        verifyLang: "bash",
+        envHint: has(".env.example") || has(".env.sample"),
+      };
+    }
+
+    // --- Python (Django) ---
+    if (has("manage.py")) {
+      return {
+        prereqs: ["[Python](https://python.org) 3.10 or higher", "[Git](https://git-scm.com)"],
+        install: [
+          "python -m venv venv",
+          "source venv/bin/activate  # Windows: venv\\Scripts\\activate",
+          has("requirements.txt") ? "pip install -r requirements.txt" : "pip install -e .",
+        ],
+        installLang: "bash",
+        run: ["python manage.py migrate", "python manage.py runserver"],
+        runLang: "bash",
+        runNote: "Open [http://localhost:8000](http://localhost:8000) once it's running.",
+        verify: ["curl http://localhost:8000"],
+        verifyLang: "bash",
+        envHint: has(".env.example") || has(".env.sample"),
+      };
+    }
+
+    // --- Python (generic / Flask / FastAPI / scripts) ---
+    if (has("requirements.txt") || has("pyproject.toml")) {
+      const usesPoetry = has("poetry.lock");
+      const entry = has("app.py") ? "app.py" : has("main.py") ? "main.py" : null;
+      return {
+        prereqs: ["[Python](https://python.org) 3.10 or higher", "[Git](https://git-scm.com)"],
+        install: usesPoetry
+          ? ["poetry install"]
+          : [
+              "python -m venv venv",
+              "source venv/bin/activate  # Windows: venv\\Scripts\\activate",
+              has("requirements.txt") ? "pip install -r requirements.txt" : "pip install -e .",
+            ],
+        installLang: "bash",
+        run: [
+          usesPoetry
+            ? `poetry run python ${entry ?? "main.py"}`
+            : `python ${entry ?? "main.py"}`,
+        ],
+        runLang: "bash",
+        envHint: has(".env.example") || has(".env.sample"),
+      };
+    }
+
+    // --- Ruby ---
+    if (has("gemfile")) {
+      const isRails = has("config.ru") || has("rakefile");
+      return {
+        prereqs: ["[Ruby](https://www.ruby-lang.org) 3.0 or higher", "[Bundler](https://bundler.io)", "[Git](https://git-scm.com)"],
+        install: ["bundle install"],
+        installLang: "bash",
+        run: [isRails ? "bin/rails server" : "bundle exec ruby app.rb"],
+        runLang: "bash",
+        envHint: has(".env.example"),
+      };
+    }
+
+    // --- Go ---
+    if (has("go.mod")) {
+      return {
+        prereqs: ["[Go](https://go.dev) 1.21 or higher", "[Git](https://git-scm.com)"],
+        install: ["go mod download"],
+        installLang: "bash",
+        run: ["go run ."],
+        runLang: "bash",
+      };
+    }
+
+    // --- Rust ---
+    if (has("cargo.toml")) {
+      return {
+        prereqs: ["[Rust](https://www.rust-lang.org) (via rustup)", "[Git](https://git-scm.com)"],
+        install: ["cargo build"],
+        installLang: "bash",
+        run: ["cargo run"],
+        runLang: "bash",
+      };
+    }
+
+    // --- Java (Maven) ---
+    if (has("pom.xml")) {
+      return {
+        prereqs: ["[Java JDK](https://adoptium.net) 17 or higher", "[Maven](https://maven.apache.org)", "[Git](https://git-scm.com)"],
+        install: ["mvn clean install"],
+        installLang: "bash",
+        run: ["mvn spring-boot:run", "# or: java -jar target/*.jar"],
+        runLang: "bash",
+      };
+    }
+
+    // --- Java / Kotlin (Gradle) ---
+    if (has("build.gradle") || has("build.gradle.kts")) {
+      return {
+        prereqs: ["[Java JDK](https://adoptium.net) 17 or higher", "[Git](https://git-scm.com)"],
+        install: ["./gradlew build"],
+        installLang: "bash",
+        run: ["./gradlew bootRun"],
+        runLang: "bash",
+      };
+    }
+
+    // --- PHP ---
+    if (has("composer.json")) {
+      const isLaravel = has("artisan");
+      return {
+        prereqs: ["[PHP](https://php.net) 8.1 or higher", "[Composer](https://getcomposer.org)", "[Git](https://git-scm.com)"],
+        install: ["composer install"],
+        installLang: "bash",
+        run: [isLaravel ? "php artisan serve" : "php -S localhost:8000"],
+        runLang: "bash",
+        runNote: "Open [http://localhost:8000](http://localhost:8000) once it's running.",
+        envHint: has(".env.example"),
+      };
+    }
+
+    // --- Docker fallback ---
+    if (has("dockerfile")) {
+      return {
+        prereqs: ["[Docker](https://www.docker.com)", "[Git](https://git-scm.com)"],
+        install: [`docker build -t ${repo} .`],
+        installLang: "bash",
+        run: [`docker run -p 8080:8080 ${repo}`],
+        runLang: "bash",
+      };
+    }
+
+    // --- Nothing recognized: honest generic fallback, no invented commands ---
+    return {
+      prereqs: [
+        language
+          ? `A working ${language} development environment`
+          : "The language/runtime this project is built with",
+        "[Git](https://git-scm.com)",
+      ],
+      install: ["# Install this project's dependencies using its language's standard package manager"],
+      installLang: "bash",
+      run: ["# Refer to the project's own documentation for the exact run command"],
+      runLang: "bash",
+    };
+  } catch {
+    return null;
+  }
+}
+
 function buildMarkdown({
   repoUrl,
   tone,
   includeBadges,
   sectionKeys,
+  stack,
 }: {
   repoUrl: string;
   tone: Tone;
   includeBadges: boolean;
   sectionKeys: string[];
+  stack: StackInfo | null;
 }) {
-  const repoName = repoUrl.split("/").filter(Boolean).pop() || "project";
-  const owner = repoUrl.split("/").filter(Boolean)[0] || "owner";
-  const pkgName = repoName.replace(/\.git$/, "");
+  const { owner, repo } = parseOwnerRepo(repoUrl);
+  const pkgName = repo;
 
   const blurb: Record<Tone, string> = {
     Professional: `${pkgName} is a production-ready package maintained by ${owner}, built for reliability and ease of integration.`,
@@ -58,14 +296,70 @@ function buildMarkdown({
   parts.push(blurb[tone], "");
 
   if (sectionKeys.includes("installation")) {
+    const s = stack ?? {
+      prereqs: ["[Git](https://git-scm.com)"],
+      install: ["# Install this project's dependencies using its language's standard package manager"],
+      installLang: "bash",
+      run: ["# Refer to the project's own documentation for the exact run command"],
+      runLang: "bash",
+    };
+
     parts.push(
       "## Installation",
       "",
+      "### Prerequisites",
+      "",
+      ...s.prereqs.map((p) => `- ${p}`),
+      "",
+      "### 1. Clone the repository",
+      "",
       "```bash",
-      `npm install ${pkgName}`,
+      `git clone https://github.com/${owner}/${pkgName}.git`,
+      `cd ${pkgName}`,
+      "```",
+      "",
+      "### 2. Install dependencies",
+      "",
+      `\`\`\`${s.installLang}`,
+      ...s.install,
       "```",
       ""
     );
+
+    if (s.envHint) {
+      parts.push(
+        "### 3. Configure environment variables",
+        "",
+        "Copy the example env file and fill in your own values:",
+        "",
+        "```bash",
+        "cp .env.example .env",
+        "```",
+        ""
+      );
+    }
+
+    const runStepNum = s.envHint ? 4 : 3;
+    parts.push(
+      `### ${runStepNum}. Run the project`,
+      "",
+      `\`\`\`${s.runLang}`,
+      ...s.run,
+      "```",
+      ""
+    );
+    if (s.runNote) parts.push(s.runNote, "");
+
+    if (s.verify) {
+      parts.push(
+        `### ${runStepNum + 1}. Verify it's working`,
+        "",
+        `\`\`\`${s.verifyLang ?? "bash"}`,
+        ...s.verify,
+        "```",
+        ""
+      );
+    }
   }
 
   if (sectionKeys.includes("features")) {
@@ -131,17 +425,30 @@ export default function Page() {
       });
       if (res.ok) {
         const data = await res.json();
-        setMarkdown(
-          data.markdown_content ??
-            buildMarkdown({ repoUrl, tone, includeBadges, sectionKeys })
-        );
+        if (data.markdown_content) {
+          setMarkdown(data.markdown_content);
+        } else {
+          const { owner, repo } = parseOwnerRepo(repoUrl);
+          const stack = sectionKeys.includes("installation")
+            ? await detectStack(owner, repo)
+            : null;
+          setMarkdown(buildMarkdown({ repoUrl, tone, includeBadges, sectionKeys, stack }));
+        }
         setConnected(true);
       } else {
-        setMarkdown(buildMarkdown({ repoUrl, tone, includeBadges, sectionKeys }));
+        const { owner, repo } = parseOwnerRepo(repoUrl);
+        const stack = sectionKeys.includes("installation")
+          ? await detectStack(owner, repo)
+          : null;
+        setMarkdown(buildMarkdown({ repoUrl, tone, includeBadges, sectionKeys, stack }));
         setConnected(false);
       }
     } catch {
-      setMarkdown(buildMarkdown({ repoUrl, tone, includeBadges, sectionKeys }));
+      const { owner, repo } = parseOwnerRepo(repoUrl);
+      const stack = sectionKeys.includes("installation")
+        ? await detectStack(owner, repo)
+        : null;
+      setMarkdown(buildMarkdown({ repoUrl, tone, includeBadges, sectionKeys, stack }));
       setConnected(false);
     } finally {
       setLoading(false);
